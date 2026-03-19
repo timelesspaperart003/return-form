@@ -685,6 +685,10 @@ body {
       <label>退貨原因</label>
       <textarea id="return-reason" placeholder="請簡述退貨原因（瑕疵、尺寸不符、改變心意...）"></textarea>
     </div>
+    <div class="field">
+      <label>備註</label>
+      <textarea id="return-note" placeholder="其他備註事項..."></textarea>
+    </div>
   </div>
 
   <!-- 退貨商品 -->
@@ -1169,6 +1173,7 @@ async function submitForm() {
     customerPhone: phone,
     customerAddress: document.getElementById('customer-address').value.trim(),
     reason: document.getElementById('return-reason').value.trim(),
+    note: document.getElementById('return-note').value.trim(),
     items
   };
 
@@ -1224,6 +1229,7 @@ function showTripleCopy(data) {
         <div class="meta-cell"><span class="label">聯絡電話</span><span class="val">${data.customerPhone}</span></div>
         ${data.customerAddress ? `<div class="meta-cell" style="grid-column:1/-1;border-right:none"><span class="label">客戶地址</span><span class="val">${data.customerAddress}</span></div>` : ''}
         ${data.reason ? `<div class="meta-cell" style="grid-column:1/-1;border-right:none"><span class="label">退貨原因</span><span class="val">${data.reason}</span></div>` : ''}
+        ${data.note ? `<div class="meta-cell" style="grid-column:1/-1;border-right:none"><span class="label">備註</span><span class="val">${data.note}</span></div>` : ''}
       </div>
 
       <table class="copy-table">
@@ -1238,17 +1244,44 @@ function showTripleCopy(data) {
         <tbody>${productRows}</tbody>
       </table>
 
+      <!-- 備註區 -->
+      ${data.note ? `
+      <div style="padding:8px 14px;border-top:1px solid #eee;font-size:12px;">
+        <span style="font-weight:700;color:#888;font-size:10px;letter-spacing:0.5px;">備註</span>
+        <div style="margin-top:3px;color:#1a1a2e;">${data.note}</div>
+      </div>` : ''}
+
+      <!-- 補送區 -->
+      <div style="border-top:1.5px solid #1a1a2e;">
+        <div style="background:#1a1a2e;color:#fff;padding:7px 10px;font-size:11px;font-weight:700;letter-spacing:0.5px;">補送商品確認</div>
+        <table style="width:100%;border-collapse:collapse;font-size:12px;">
+          <thead>
+            <tr>
+              <th style="width:28px;padding:6px 10px;text-align:center;border-bottom:1px solid #ccc;font-size:11px;background:#f7f6f2;">✓</th>
+              <th style="padding:6px 10px;text-align:left;border-bottom:1px solid #ccc;font-size:11px;background:#f7f6f2;">補送商品</th>
+              <th style="width:60px;padding:6px 10px;text-align:center;border-bottom:1px solid #ccc;font-size:11px;background:#f7f6f2;">數量</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${data.items.map(item => `
+            <tr>
+              <td style="text-align:center;padding:7px 10px;border-bottom:1px solid #eee;">
+                <span style="display:inline-block;width:14px;height:14px;border:1.5px solid #888;border-radius:2px;"></span>
+              </td>
+              <td style="padding:7px 10px;border-bottom:1px solid #eee;">${item.pinming}</td>
+              <td style="text-align:center;padding:7px 10px;border-bottom:1px solid #eee;font-family:monospace;font-weight:700;">${item.qty}</td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+
       <div class="copy-sign">
         <div class="sign-cell">
-          <div class="sign-label">公司人員</div>
+          <div class="sign-label">負責人員</div>
           <div class="sign-line"></div>
           <div style="font-size:10px;margin-top:4px;color:#bbb">簽名 / 日期</div>
         </div>
-        <div class="sign-cell">
-          <div class="sign-label">回傳單</div>
-          <div class="sign-line"></div>
-          <div style="font-size:10px;margin-top:4px;color:#bbb">簽名 / 日期</div>
-        </div>
+
         <div class="sign-cell">
           <div class="sign-label">客戶簽收</div>
           <div class="sign-line"></div>
