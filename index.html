@@ -296,6 +296,9 @@ body {
 .qty-input:focus { outline: none; background: var(--accent-bg); }
 
 /* ── Add Product Button ── */
+/* ── 補送商品卡片 ── */
+#resend-product-card .card-title { color: var(--accent); }
+
 .btn-add-product {
   width: 100%;
   background: none;
@@ -711,8 +714,28 @@ body {
       <input type="hidden" id="customer-name">
     </div>
     <div class="field">
-      <label>退貨原因</label>
-      <textarea id="return-reason" placeholder="請簡述退貨原因（瑕疵、尺寸不符、改變心意...）"></textarea>
+      <label>退貨原因 <span class="req">*</span></label>
+      <select id="return-reason" onchange="onReasonChange()" style="background:#fff;">
+        <option value="">— 請選擇退貨原因 —</option>
+        <option value="商品本身瑕疵">商品本身瑕疵</option>
+        <option value="對方請求修補協助(補完送回)">對方請求修補協助(補完送回)</option>
+        <option value="錯款">錯款</option>
+        <option value="其他">其他</option>
+      </select>
+    </div>
+    <!-- 其他原因文字輸入（原因=其他時顯示） -->
+    <div class="field" id="reason-other-wrap" style="display:none;">
+      <label>請說明原因</label>
+      <textarea id="reason-other-text" placeholder="請輸入退貨原因說明..."></textarea>
+    </div>
+    <!-- 補送商品選擇區（原因=錯款或其他時顯示） -->
+    <div class="card" id="resend-product-card" style="display:none;margin-top:0;border:1.5px solid var(--accent-light);background:var(--accent-bg);">
+      <div class="card-title">補送商品</div>
+      <div id="resend-product-list"></div>
+      <button class="btn-add-product" onclick="addResendItem()" style="border-color:var(--accent-light);color:var(--accent);">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        新增補送商品
+      </button>
     </div>
     <div class="field">
       <label>備註</label>
@@ -1167,6 +1190,176 @@ function hideCustomerDropdownNow() {
 }
 
 // ============================================================
+// 退貨原因邏輯
+// ============================================================
+function onReasonChange() {
+  var reason = document.getElementById('return-reason').value;
+  var otherWrap = document.getElementById('reason-other-wrap');
+  var resendCard = document.getElementById('resend-product-card');
+
+  // 其他原因文字框
+  otherWrap.style.display = (reason === '其他') ? 'block' : 'none';
+
+  // 補送商品選擇區（錯款或其他才顯示）
+  if (reason === '錯款' || reason === '其他') {
+    resendCard.style.display = 'block';
+    if (document.getElementById('resend-product-list').children.length === 0) {
+      addResendItem();
+    }
+  } else {
+    resendCard.style.display = 'none';
+  }
+}
+
+// 取得補送商品清單（依退貨原因自動產生或手動選擇）
+function getResendItems() {
+  var reason = document.getElementById('return-reason').value;
+
+  if (reason === '商品本身瑕疵' || reason === '對方請求修補協助(補完送回)') {
+    // 自動帶入退貨商品
+    var items = [];
+    document.querySelectorAll('.product-item').forEach(function(el) {
+      var id = el.id.replace('product-item-', '');
+      var p = selectedProducts[id];
+      var qty = parseInt(document.getElementById('qty-' + id).value) || 1;
+      if (p) items.push({ pinming: p.pinming, shangjiaming: p.shangjiaming || '', qty: qty });
+    });
+    return items;
+  } else if (reason === '錯款' || reason === '其他') {
+    // 手動選擇的補送商品
+    var items = [];
+    document.querySelectorAll('.resend-item').forEach(function(el) {
+      var id = el.id.replace('resend-item-', '');
+      var p = selectedResendProducts[id];
+      var qty = parseInt(document.getElementById('resend-qty-' + id).value) || 1;
+      if (p) items.push({ pinming: p.pinming, shangjiaming: p.shangjiaming || '', qty: qty });
+    });
+    return items;
+  }
+  return [];
+}
+
+// ============================================================
+// 補送商品搜尋（錯款/其他）
+// ============================================================
+var resendCount = 0;
+var selectedResendProducts = {};
+var resendSearchTimers = {};
+var resendDropdownItems = {};
+var resendDropdownIndex = {};
+
+function addResendItem() {
+  resendCount++;
+  var id = resendCount;
+  var list = document.getElementById('resend-product-list');
+  var div = document.createElement('div');
+  div.className = 'product-item resend-item';
+  div.id = 'resend-item-' + id;
+  div.style.background = '#fff';
+  div.innerHTML =
+    '<div class="product-item-header">' +
+      '<span class="product-num" style="background:#fef3e2;color:#e67e22;">補送 ' + String(id).padStart(2,'0') + '</span>' +
+      (id > 1 ? '<button class="btn-remove" onclick="removeResend(' + id + ')">移除</button>' : '<span></span>') +
+    '</div>' +
+    '<div class="search-wrap">' +
+      '<input class="search-input" type="text" id="resend-search-' + id + '" placeholder="輸入補送品名搜尋..." autocomplete="off"' +
+        ' oninput="onResendInput(' + id + ')"' +
+        ' onblur="hideResendDropdown(' + id + ')"' +
+        ' onkeydown="onResendKey(event,' + id + ')">' +
+      '<div class="dropdown" id="resend-dropdown-' + id + '"></div>' +
+    '</div>' +
+    '<div class="selected-product" id="resend-selected-' + id + '">' +
+      '<div class="product-info"><div class="pname" id="resend-pname-' + id + '"></div></div>' +
+    '</div>' +
+    '<div class="qty-wrap" id="resend-qty-wrap-' + id + '" style="display:none;">' +
+      '<label>補送數量</label>' +
+      '<div class="qty-control">' +
+        '<button class="qty-btn" onclick="changeResendQty(' + id + ',-1)">−</button>' +
+        '<input class="qty-input" type="number" id="resend-qty-' + id + '" value="1" min="1">' +
+        '<button class="qty-btn" onclick="changeResendQty(' + id + ',+1)">＋</button>' +
+      '</div>' +
+    '</div>';
+  list.appendChild(div);
+}
+
+function removeResend(id) {
+  var el = document.getElementById('resend-item-' + id);
+  if (el) el.remove();
+}
+
+function changeResendQty(id, delta) {
+  var input = document.getElementById('resend-qty-' + id);
+  var val = Math.max(1, (parseInt(input.value) || 1) + delta);
+  input.value = val;
+}
+
+function onResendInput(id) {
+  clearTimeout(resendSearchTimers[id]);
+  var q = document.getElementById('resend-search-' + id).value.trim();
+  selectedResendProducts[id] = null;
+  document.getElementById('resend-selected-' + id).classList.remove('show');
+  document.getElementById('resend-qty-wrap-' + id).style.display = 'none';
+  if (!q) { hideResendDropdownNow(id); return; }
+  var dd = document.getElementById('resend-dropdown-' + id);
+  dd.innerHTML = '<div class="dropdown-loading">搜尋中…</div>';
+  dd.classList.add('open');
+  resendSearchTimers[id] = setTimeout(function() { fetchResendProducts(id, q); }, 350);
+}
+
+async function fetchResendProducts(id, q) {
+  try {
+    var data = await gasRequest({ action: 'getProducts', q: q });
+    if (data.success) renderResendDropdown(id, data.products);
+    else renderResendDropdown(id, []);
+  } catch(e) { renderResendDropdown(id, []); }
+}
+
+function renderResendDropdown(id, products) {
+  var dd = document.getElementById('resend-dropdown-' + id);
+  resendDropdownItems[id] = products;
+  resendDropdownIndex[id] = -1;
+  if (!products.length) {
+    dd.innerHTML = '<div class="dropdown-empty">找不到符合的商品</div>';
+    dd.classList.add('open');
+    return;
+  }
+  dd.innerHTML = products.map(function(p, i) {
+    return '<div class="dropdown-item" data-idx="' + i + '" onmousedown="selectResendProduct(' + id + ',' + i + ')">' +
+      '<div>' + p.pinming + '</div>' +
+      (p.shangjiaming ? '<div class="sub">' + p.shangjiaming + '</div>' : '') +
+    '</div>';
+  }).join('');
+  dd.classList.add('open');
+}
+
+function selectResendProduct(id, idx) {
+  var p = resendDropdownItems[id][idx];
+  if (!p) return;
+  selectedResendProducts[id] = p;
+  document.getElementById('resend-search-' + id).value = p.pinming;
+  document.getElementById('resend-pname-' + id).textContent = p.pinming;
+  document.getElementById('resend-selected-' + id).classList.add('show');
+  document.getElementById('resend-qty-wrap-' + id).style.display = 'flex';
+  hideResendDropdownNow(id);
+}
+
+function onResendKey(e, id) {
+  var dd = document.getElementById('resend-dropdown-' + id);
+  var items = dd.querySelectorAll('.dropdown-item');
+  if (!items.length) return;
+  if (e.key === 'ArrowDown') { e.preventDefault(); resendDropdownIndex[id] = Math.min((resendDropdownIndex[id]||0) + 1, items.length-1); }
+  else if (e.key === 'ArrowUp') { e.preventDefault(); resendDropdownIndex[id] = Math.max((resendDropdownIndex[id]||0) - 1, 0); }
+  else if (e.key === 'Enter') { e.preventDefault(); selectResendProduct(id, resendDropdownIndex[id] >= 0 ? resendDropdownIndex[id] : 0); }
+  else if (e.key === 'Escape') hideResendDropdownNow(id);
+}
+
+function hideResendDropdown(id) { setTimeout(function(){ hideResendDropdownNow(id); }, 200); }
+function hideResendDropdownNow(id) {
+  var dd = document.getElementById('resend-dropdown-' + id);
+  if (dd) dd.classList.remove('open');
+}
+
+// ============================================================
 // 提交表單
 // ============================================================
 async function submitForm() {
@@ -1175,9 +1368,14 @@ async function submitForm() {
   const nameSearch = document.getElementById('customer-search').value.trim();
   const name = nameHidden || nameSearch;
   const phone = document.getElementById('customer-phone').value.trim();
+  const reason = document.getElementById('return-reason').value;
 
   if (!name) {
     showToast('⚠️ 請填寫客戶姓名');
+    return;
+  }
+  if (!reason) {
+    showToast('⚠️ 請選擇退貨原因');
     return;
   }
 
@@ -1203,8 +1401,11 @@ async function submitForm() {
     customerName: name,
     customerPhone: phone,
     customerAddress: document.getElementById('customer-address').value.trim(),
-    reason: document.getElementById('return-reason').value.trim(),
+    reason: (document.getElementById('return-reason').value === '其他'
+      ? '其他：' + (document.getElementById('reason-other-text').value.trim() || '未說明')
+      : document.getElementById('return-reason').value),
     note: document.getElementById('return-note').value.trim(),
+    resendItems: getResendItems(),
     items
   };
 
@@ -1282,27 +1483,28 @@ function showTripleCopy(data) {
         <div style="margin-top:3px;color:#1a1a2e;">${data.note}</div>
       </div>` : ''}
 
-      <!-- 補送區 -->
+      <!-- 補送區（有補送商品才顯示） -->
+      ${data.resendItems && data.resendItems.length > 0 ? `
       <div style="border-top:1.5px solid #1a1a2e;">
         <div style="background:#1a1a2e;color:#fff;padding:7px 10px;font-size:11px;font-weight:700;letter-spacing:0.5px;">補送商品確認</div>
         <table style="width:100%;border-collapse:collapse;font-size:12px;">
           <thead>
             <tr>
-              ${isFirst ? `<th style="width:28px;padding:6px 10px;text-align:center;border-bottom:1px solid #ccc;font-size:11px;background:#f7f6f2;"></th>` : ''}
+              ${isFirst ? '<th style="width:28px;padding:6px 10px;text-align:center;border-bottom:1px solid #ccc;font-size:11px;background:#f7f6f2;"></th>' : ''}
               <th style="padding:6px 10px;text-align:left;border-bottom:1px solid #ccc;font-size:11px;background:#f7f6f2;">補送商品</th>
               <th style="width:60px;padding:6px 10px;text-align:center;border-bottom:1px solid #ccc;font-size:11px;background:#f7f6f2;">數量</th>
             </tr>
           </thead>
           <tbody>
-            ${data.items.map(item => `
+            ${data.resendItems.map(item => `
             <tr>
-              ${isFirst ? `<td style="text-align:center;padding:7px 10px;border-bottom:1px solid #eee;"><span style="display:inline-block;width:14px;height:14px;border:1.5px solid #888;border-radius:2px;"></span></td>` : ''}
+              ${isFirst ? '<td style="text-align:center;padding:7px 10px;border-bottom:1px solid #eee;"><span style="display:inline-block;width:14px;height:14px;border:1.5px solid #888;border-radius:2px;"></span></td>' : ''}
               <td style="padding:7px 10px;border-bottom:1px solid #eee;">${item.pinming}</td>
               <td style="text-align:center;padding:7px 10px;border-bottom:1px solid #eee;font-family:monospace;font-weight:700;">${item.qty}</td>
             </tr>`).join('')}
           </tbody>
         </table>
-      </div>
+      </div>` : ''}
 
       <div class="copy-sign" style="grid-template-columns: ${i === 2 ? '1fr' : '1fr 1fr'};">
         ${i === 0 ? `
@@ -1395,6 +1597,12 @@ function newForm() {
   document.getElementById('customer-phone').value = '';
   document.getElementById('customer-address').value = '';
   document.getElementById('return-reason').value = '';
+  document.getElementById('reason-other-wrap').style.display = 'none';
+  document.getElementById('reason-other-text').value = '';
+  document.getElementById('resend-product-card').style.display = 'none';
+  document.getElementById('resend-product-list').innerHTML = '';
+  resendCount = 0;
+  selectedResendProducts = {};
   document.getElementById('product-list').innerHTML = '';
   productCount = 0;
   selectedProducts = {};
