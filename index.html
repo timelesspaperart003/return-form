@@ -840,7 +840,7 @@ function initAuth() {
 }
 
 // ============================================================
-// GAS 通用請求（純 fetch，適用 GitHub Pages https 環境）
+// GAS 通用請求（JSONP 繞過 CORS）
 // ============================================================
 function gasRequest(params, method) {
   method = method || 'GET';
@@ -857,16 +857,38 @@ function gasRequest(params, method) {
       .catch(reject);
       return;
     }
-    // GET
+    // GET 用 JSONP（唯一能繞過 GAS CORS 的方式）
+    var cbName = 'cb_' + Date.now() + '_' + Math.floor(Math.random() * 10000);
     params.token = AUTH_TOKEN;
+    params.callback = cbName;
     var qs = Object.keys(params).map(function(k) {
       return k + '=' + encodeURIComponent(params[k]);
     }).join('&');
     var url = SCRIPT_URL + '?' + qs;
-    fetch(url, { redirect: 'follow' })
-      .then(function(r) { return r.json(); })
-      .then(resolve)
-      .catch(reject);
+
+    var script = document.createElement('script');
+    var timer = setTimeout(function() {
+      cleanup();
+      reject(new Error('timeout'));
+    }, 15000);
+
+    window[cbName] = function(data) {
+      cleanup();
+      resolve(data);
+    };
+
+    function cleanup() {
+      clearTimeout(timer);
+      delete window[cbName];
+      if (script.parentNode) script.parentNode.removeChild(script);
+    }
+
+    script.onerror = function() {
+      cleanup();
+      reject(new Error('script error'));
+    };
+    script.src = url;
+    document.head.appendChild(script);
   });
 }
 
