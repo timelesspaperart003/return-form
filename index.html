@@ -1005,6 +1005,7 @@ let searchTimers = {};
 let selectedProducts = {};
 let dropdownItems = {};
 let dropdownIndex = {};
+let searchSeq = {}; // 請求序號，防止舊結果覆蓋新結果
 
 function onSearchInput(id) {
   clearTimeout(searchTimers[id]);
@@ -1020,20 +1021,25 @@ function onSearchInput(id) {
   dd.innerHTML = '<div class="dropdown-loading">搜尋中…</div>';
   dd.classList.add('open');
 
-  searchTimers[id] = setTimeout(() => fetchProducts(id, q), 350);
+  searchTimers[id] = setTimeout(() => fetchProducts(id, q), 200);
 }
 
 async function fetchProducts(id, q) {
+  if (!searchSeq[id]) searchSeq[id] = 0;
+  const mySeq = ++searchSeq[id];
+
   if (!SCRIPT_URL) {
     const demo = getDemoProducts(q);
-    renderDropdown(id, demo);
+    if (mySeq === searchSeq[id]) renderDropdown(id, demo);
     return;
   }
   try {
     const data = await gasRequest({ action: 'getProducts', q });
+    if (mySeq !== searchSeq[id]) return; // 舊結果，丟棄
     if (data.success) renderDropdown(id, data.products);
     else renderDropdown(id, []);
   } catch (e) {
+    if (mySeq !== searchSeq[id]) return;
     console.error('fetchProducts error:', e);
     renderDropdown(id, []);
   }
@@ -1152,6 +1158,7 @@ function getDemoProducts(q) {
 let customerTimer = null;
 let customerItems = [];
 let customerDropIdx = -1;
+let customerSeq = 0;
 
 function onCustomerInput() {
   clearTimeout(customerTimer);
@@ -1169,15 +1176,18 @@ function onCustomerInput() {
   dd.innerHTML = '<div class="dropdown-loading">搜尋中…</div>';
   dd.classList.add('open');
 
-  customerTimer = setTimeout(() => fetchCustomers(q), 350);
+  customerTimer = setTimeout(() => fetchCustomers(q), 200);
 }
 
 async function fetchCustomers(q) {
+  const mySeq = ++customerSeq;
   try {
     const data = await gasRequest({ action: 'getCustomers', q });
+    if (mySeq !== customerSeq) return; // 舊結果，丟棄
     if (data.success) renderCustomerDropdown(data.customers);
     else renderCustomerDropdown([]);
   } catch(e) {
+    if (mySeq !== customerSeq) return;
     console.error('fetchCustomers error:', e);
     renderCustomerDropdown([]);
   }
@@ -1295,6 +1305,7 @@ var selectedResendProducts = {};
 var resendSearchTimers = {};
 var resendDropdownItems = {};
 var resendDropdownIndex = {};
+var resendSeq = {};
 
 function addResendItem() {
   resendCount++;
@@ -1351,15 +1362,21 @@ function onResendInput(id) {
   var dd = document.getElementById('resend-dropdown-' + id);
   dd.innerHTML = '<div class="dropdown-loading">搜尋中…</div>';
   dd.classList.add('open');
-  resendSearchTimers[id] = setTimeout(function() { fetchResendProducts(id, q); }, 350);
+  resendSearchTimers[id] = setTimeout(function() { fetchResendProducts(id, q); }, 200);
 }
 
 async function fetchResendProducts(id, q) {
+  if (!resendSeq[id]) resendSeq[id] = 0;
+  var mySeq = ++resendSeq[id];
   try {
     var data = await gasRequest({ action: 'getProducts', q: q });
+    if (mySeq !== resendSeq[id]) return;
     if (data.success) renderResendDropdown(id, data.products);
     else renderResendDropdown(id, []);
-  } catch(e) { renderResendDropdown(id, []); }
+  } catch(e) {
+    if (mySeq !== resendSeq[id]) return;
+    renderResendDropdown(id, []);
+  }
 }
 
 function renderResendDropdown(id, products) {
