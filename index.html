@@ -1280,14 +1280,14 @@ function showTripleCopy(data) {
         </table>
       </div>
 
-      ${i !== 2 ? `
-      <div class="copy-sign" style="${i === 0 ? 'grid-template-columns: 1fr;' : 'grid-template-columns: 1fr 1fr;'}">
+      <div class="copy-sign" style="${i === 1 ? 'grid-template-columns: 1fr 1fr;' : 'grid-template-columns: 1fr;'}">
         ${i === 0 ? `
         <div class="sign-cell" style="border-right:none;">
           <div class="sign-label">負責人員</div>
           <div class="sign-line"></div>
           <div style="font-size:10px;margin-top:4px;color:#bbb">簽名 / 日期</div>
-        </div>` : `
+        </div>` : ''}
+        ${i === 1 ? `
         <div class="sign-cell">
           <div class="sign-label">物流簽收</div>
           <div class="sign-line"></div>
@@ -1297,8 +1297,14 @@ function showTripleCopy(data) {
           <div class="sign-label">客戶簽收</div>
           <div class="sign-line"></div>
           <div style="font-size:10px;margin-top:4px;color:#bbb">簽名 / 日期</div>
-        </div>`}
-      </div>` : ''}
+        </div>` : ''}
+        ${i === 2 ? `
+        <div class="sign-cell" style="border-right:none;">
+          <div class="sign-label">客戶簽收</div>
+          <div class="sign-line"></div>
+          <div style="font-size:10px;margin-top:4px;color:#bbb">簽名 / 日期</div>
+        </div>` : ''}
+      </div>
 
       <div class="copy-footer">${COMPANY_NAME_EN} · ${data.returnNo} · RETURN FORM</div>
     </div>
