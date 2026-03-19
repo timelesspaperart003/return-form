@@ -1264,6 +1264,7 @@ function showTripleCopy(data) {
         <table style="width:100%;border-collapse:collapse;font-size:12px;">
           <thead>
             <tr>
+              ${isFirst ? `<th style="width:28px;padding:6px 10px;text-align:center;border-bottom:1px solid #ccc;font-size:11px;background:#f7f6f2;"></th>` : ''}
               <th style="padding:6px 10px;text-align:left;border-bottom:1px solid #ccc;font-size:11px;background:#f7f6f2;">補送商品</th>
               <th style="width:60px;padding:6px 10px;text-align:center;border-bottom:1px solid #ccc;font-size:11px;background:#f7f6f2;">數量</th>
             </tr>
@@ -1271,6 +1272,7 @@ function showTripleCopy(data) {
           <tbody>
             ${data.items.map(item => `
             <tr>
+              ${isFirst ? `<td style="text-align:center;padding:7px 10px;border-bottom:1px solid #eee;"><span style="display:inline-block;width:14px;height:14px;border:1.5px solid #888;border-radius:2px;"></span></td>` : ''}
               <td style="padding:7px 10px;border-bottom:1px solid #eee;">${item.pinming}</td>
               <td style="text-align:center;padding:7px 10px;border-bottom:1px solid #eee;font-family:monospace;font-weight:700;">${item.qty}</td>
             </tr>`).join('')}
