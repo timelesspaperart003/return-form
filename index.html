@@ -629,17 +629,58 @@ body {
 
 /* ── @media print ── */
 @media print {
+  @page { margin: 8mm; size: A4 portrait; }
   body > *:not(#print-overlay) { display: none !important; }
-  #print-overlay { display: block !important; position: static !important; background: none !important; padding: 0 !important; overflow: visible !important; }
+  #print-overlay {
+    display: block !important;
+    position: static !important;
+    background: none !important;
+    padding: 0 !important;
+    overflow: visible !important;
+  }
   .print-wrap { box-shadow: none !important; border-radius: 0 !important; max-width: 100% !important; }
   .print-actions { display: none !important; }
-  .tripcopy-container { background: none !important; padding: 0 !important; gap: 0 !important; }
-  .copy-1 { border: 1px solid #999 !important; margin-bottom: 0 !important; page-break-after: always; break-after: page; }
-  .copy-2 { border: 1px solid #999 !important; margin-bottom: 0 !important; page-break-after: avoid; break-after: avoid; }
-  .copy-3 { border: 1px solid #999 !important; margin-bottom: 0 !important; page-break-after: avoid; break-after: avoid; }
-  .copy-2-3-wrapper { page-break-inside: avoid; break-inside: avoid; }
-  .tear-line { border: none; border-top: 2px dashed #aaa; margin: 4px 0; }
-  .tear-line-label { text-align: center; font-size: 9px; color: #aaa; letter-spacing: 2px; margin: 2px 0 4px; }
+  .tripcopy-container {
+    background: none !important;
+    padding: 0 !important;
+    gap: 0 !important;
+    display: block !important;
+  }
+  /* 第一聯：整頁，列印後換頁 */
+  .copy-1 {
+    border: 1px solid #999 !important;
+    page-break-after: always !important;
+    break-after: page !important;
+    page-break-inside: avoid !important;
+    font-size: 11px !important;
+  }
+  /* 第二三聯包裝容器：同一頁 */
+  .copy-2-3-wrapper {
+    page-break-before: auto !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    border: none !important;
+  }
+  /* 第二聯縮小字體讓兩聯能塞進一頁 */
+  .copy-2, .copy-3 {
+    border: 1px solid #999 !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    font-size: 10px !important;
+  }
+  .copy-2 { margin-bottom: 0 !important; }
+  .copy-3 { margin-top: 0 !important; }
+  /* 縮小各區塊 padding 讓兩聯塞入一頁 */
+  .copy-2 .copy-header, .copy-3 .copy-header { padding: 6px 10px !important; }
+  .copy-2 .copy-header h1, .copy-3 .copy-header h1 { font-size: 14px !important; }
+  .copy-2 .copy-meta .meta-cell, .copy-3 .copy-meta .meta-cell { padding: 4px 10px !important; }
+  .copy-2 .copy-table th, .copy-2 .copy-table td,
+  .copy-3 .copy-table th, .copy-3 .copy-table td { padding: 4px 8px !important; }
+  .copy-2 .copy-sign .sign-cell, .copy-3 .copy-sign .sign-cell { padding: 6px 10px 14px !important; }
+  .copy-2 .copy-footer, .copy-3 .copy-footer { padding: 4px !important; }
+  .copy-2 img, .copy-3 img { height: 24px !important; }
+  .tear-line { border: none !important; border-top: 1.5px dashed #999 !important; margin: 2px 0 !important; }
+  .tear-line-label { font-size: 8px !important; padding: 1px 0 !important; }
   * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
 }
 
