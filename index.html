@@ -398,6 +398,8 @@ body {
   cursor: pointer;
   transition: background 0.15s;
 }
+.btn-download { background: #2874a6; color: #fff; }
+.btn-download:hover { background: #1a5276; }
 .btn-print { background: var(--success); color: #fff; }
 .btn-print:hover { background: #1e8449; }
 .btn-close-print { background: #555; color: #fff; }
@@ -624,6 +626,7 @@ body {
   .sign-cell { border-right: none; border-top: 1px solid #ccc; }
 }
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
 
@@ -719,6 +722,7 @@ body {
     <div class="print-actions">
       <button class="btn-back" onclick="goBack()">← 上一步</button>
       <button class="btn-new" onclick="newForm()">📝 新增退貨單</button>
+      <button class="btn-download" onclick="downloadPDF()" id="btn-download">⬇ 下載 PDF</button>
       <button class="btn-print" onclick="window.print()">🖨️ 列印三聯單</button>
       <button class="btn-close-print" onclick="closePrint()">✕ 關閉</button>
     </div>
@@ -1278,12 +1282,14 @@ function showTripleCopy(data) {
         </table>
       </div>
 
-      <div class="copy-sign" style="${i === 2 ? 'grid-template-columns: 1fr 1fr;' : ''}">
-        ${i !== 2 ? `<div class="sign-cell">
+      <div class="copy-sign" style="${i === 0 ? 'grid-template-columns: 1fr;' : 'grid-template-columns: 1fr 1fr;'}">
+        ${i === 0 ? `
+        <div class="sign-cell" style="border-right:none;">
           <div class="sign-label">負責人員</div>
           <div class="sign-line"></div>
           <div style="font-size:10px;margin-top:4px;color:#bbb">簽名 / 日期</div>
         </div>` : ''}
+        ${i === 1 ? `
         <div class="sign-cell">
           <div class="sign-label">物流簽收</div>
           <div class="sign-line"></div>
@@ -1293,7 +1299,18 @@ function showTripleCopy(data) {
           <div class="sign-label">客戶簽收</div>
           <div class="sign-line"></div>
           <div style="font-size:10px;margin-top:4px;color:#bbb">簽名 / 日期</div>
+        </div>` : ''}
+        ${i === 2 ? `
+        <div class="sign-cell">
+          <div class="sign-label">物流簽收</div>
+          <div class="sign-line"></div>
+          <div style="font-size:10px;margin-top:4px;color:#bbb">簽名 / 日期</div>
         </div>
+        <div class="sign-cell">
+          <div class="sign-label">客戶簽收</div>
+          <div class="sign-line"></div>
+          <div style="font-size:10px;margin-top:4px;color:#bbb">簽名 / 日期</div>
+        </div>` : ''}
       </div>
 
       <div class="copy-footer">${COMPANY_NAME_EN} · ${data.returnNo} · RETURN FORM</div>
@@ -1310,6 +1327,33 @@ function closePrint() {
 function goBack() {
   closePrint();
   window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function downloadPDF() {
+  const btn = document.getElementById('btn-download');
+  btn.disabled = true;
+  btn.textContent = '產生中...';
+
+  const element = document.getElementById('tripcopy-container');
+  const returnNo = document.getElementById('return-no-badge').textContent || '退貨單';
+
+  const opt = {
+    margin: 6,
+    filename: returnNo + '_三聯單.pdf',
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2, useCORS: true, logging: false },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+    pagebreak: { mode: ['avoid-all', 'css'] }
+  };
+
+  html2pdf().set(opt).from(element).save().then(function() {
+    btn.disabled = false;
+    btn.textContent = '⬇ 下載 PDF';
+  }).catch(function() {
+    btn.disabled = false;
+    btn.textContent = '⬇ 下載 PDF';
+    alert('下載失敗，請改用列印另存 PDF');
+  });
 }
 
 function newForm() {
