@@ -700,7 +700,8 @@ body {
   .sign-cell { border-right: none; border-top: 1px solid #ccc; }
 }
 </style>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
 
@@ -1618,41 +1619,47 @@ function downloadPDF() {
   var container = document.getElementById('tripcopy-container');
   var copy1 = container.querySelector('.copy-1');
   var copy23 = container.querySelector('.copy-2-3-wrapper');
+  var margin = 10;
 
-  // 用 jsPDF + html2canvas 分別截圖再合成兩頁 PDF
-  var A4_W = 794;
-  var A4_H = 1123;
-  var margin = 20;
+  function captureElement(el) {
+    return html2canvas(el, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: '#ffffff',
+      windowWidth: 794
+    });
+  }
 
-  Promise.all([
-    html2pdf().set({
-      html2canvas: { scale: 2, useCORS: true, windowWidth: A4_W }
-    }).from(copy1).toCanvas(),
-    html2pdf().set({
-      html2canvas: { scale: 2, useCORS: true, windowWidth: A4_W }
-    }).from(copy23).toCanvas()
-  ]).then(function(canvases) {
-    var c1 = canvases[0];
-    var c2 = canvases[1];
-    var { jsPDF } = window.jspdf;
-    var pdf = new jsPDF({ unit: 'px', format: 'a4', orientation: 'portrait' });
-    var pW = pdf.internal.pageSize.getWidth();
-    var pH = pdf.internal.pageSize.getHeight();
+  captureElement(copy1).then(function(canvas1) {
+    return captureElement(copy23).then(function(canvas2) {
+      var jsPDFLib = window.jspdf.jsPDF;
+      var pdf = new jsPDFLib({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+      var pW = pdf.internal.pageSize.getWidth();   // 210mm
+      var pH = pdf.internal.pageSize.getHeight();  // 297mm
 
-    // 第一頁
-    var ratio1 = Math.min((pW - margin*2) / c1.width, (pH - margin*2) / c1.height);
-    pdf.addImage(c1.toDataURL('image/jpeg', 0.95), 'JPEG',
-      margin, margin, c1.width * ratio1, c1.height * ratio1);
+      // 第一頁
+      var imgW1 = pW - margin * 2;
+      var imgH1 = (canvas1.height / canvas1.width) * imgW1;
+      if (imgH1 > pH - margin * 2) {
+        imgH1 = pH - margin * 2;
+        imgW1 = (canvas1.width / canvas1.height) * imgH1;
+      }
+      pdf.addImage(canvas1.toDataURL('image/jpeg', 0.95), 'JPEG', margin, margin, imgW1, imgH1);
 
-    // 第二頁
-    pdf.addPage();
-    var ratio2 = Math.min((pW - margin*2) / c2.width, (pH - margin*2) / c2.height);
-    pdf.addImage(c2.toDataURL('image/jpeg', 0.95), 'JPEG',
-      margin, margin, c2.width * ratio2, c2.height * ratio2);
+      // 第二頁
+      pdf.addPage();
+      var imgW2 = pW - margin * 2;
+      var imgH2 = (canvas2.height / canvas2.width) * imgW2;
+      if (imgH2 > pH - margin * 2) {
+        imgH2 = pH - margin * 2;
+        imgW2 = (canvas2.width / canvas2.height) * imgH2;
+      }
+      pdf.addImage(canvas2.toDataURL('image/jpeg', 0.95), 'JPEG', margin, margin, imgW2, imgH2);
 
-    pdf.save(returnNo + '_三聯單.pdf');
-    btn.disabled = false;
-    btn.textContent = '⬇ 下載 PDF';
+      pdf.save(returnNo + '_三聯單.pdf');
+      btn.disabled = false;
+      btn.textContent = '⬇ 下載 PDF';
+    });
   }).catch(function(e) {
     console.error(e);
     btn.disabled = false;
