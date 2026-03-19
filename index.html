@@ -1049,7 +1049,7 @@ function searchLocal(list, q, fields) {
       var val = String(list[i][fields[f]] || '').toLowerCase();
       if (val.indexOf(ql) !== -1) { results.push(list[i]); break; }
     }
-    if (results.length >= 50) break;
+    if (results.length >= 100) break;
   }
   return results;
 }
