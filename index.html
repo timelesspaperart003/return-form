@@ -999,6 +999,62 @@ function gasRequest(params, method) {
 }
 
 // ============================================================
+// 本地快取（一次載入全部資料，搜尋在前端做）
+// ============================================================
+var _allProducts = null;
+var _allCustomers = null;
+var _loadingProducts = false;
+var _loadingCustomers = false;
+var _productCallbacks = [];
+var _customerCallbacks = [];
+
+function getAllProducts(callback) {
+  if (_allProducts) { callback(_allProducts); return; }
+  _productCallbacks.push(callback);
+  if (_loadingProducts) return;
+  _loadingProducts = true;
+  gasRequest({ action: 'getProducts', q: '' }).then(function(data) {
+    _allProducts = (data.success && data.products) ? data.products : [];
+    _productCallbacks.forEach(function(cb) { cb(_allProducts); });
+    _productCallbacks = [];
+  }).catch(function() {
+    _allProducts = [];
+    _productCallbacks.forEach(function(cb) { cb([]); });
+    _productCallbacks = [];
+  });
+}
+
+function getAllCustomers(callback) {
+  if (_allCustomers) { callback(_allCustomers); return; }
+  _customerCallbacks.push(callback);
+  if (_loadingCustomers) return;
+  _loadingCustomers = true;
+  gasRequest({ action: 'getCustomers', q: '' }).then(function(data) {
+    _allCustomers = (data.success && data.customers) ? data.customers : [];
+    _customerCallbacks.forEach(function(cb) { cb(_allCustomers); });
+    _customerCallbacks = [];
+  }).catch(function() {
+    _allCustomers = [];
+    _customerCallbacks.forEach(function(cb) { cb([]); });
+    _customerCallbacks = [];
+  });
+}
+
+function searchLocal(list, q, fields) {
+  if (!q) return list.slice(0, 50);
+  var ql = q.toLowerCase();
+  var results = [];
+  for (var i = 0; i < list.length; i++) {
+    for (var f = 0; f < fields.length; f++) {
+      var val = String(list[i][fields[f]] || '').toLowerCase();
+      if (val.indexOf(ql) !== -1) { results.push(list[i]); break; }
+    }
+    if (results.length >= 50) break;
+  }
+  return results;
+}
+
+// ============================================================
 // 搜尋 API
 // ============================================================
 let searchTimers = {};
@@ -1024,25 +1080,13 @@ function onSearchInput(id) {
   searchTimers[id] = setTimeout(() => fetchProducts(id, q), 200);
 }
 
-async function fetchProducts(id, q) {
+function fetchProducts(id, q) {
   if (!searchSeq[id]) searchSeq[id] = 0;
-  const mySeq = ++searchSeq[id];
-
-  if (!SCRIPT_URL) {
-    const demo = getDemoProducts(q);
-    if (mySeq === searchSeq[id]) renderDropdown(id, demo);
-    return;
-  }
-  try {
-    const data = await gasRequest({ action: 'getProducts', q });
-    if (mySeq !== searchSeq[id]) return; // 舊結果，丟棄
-    if (data.success) renderDropdown(id, data.products);
-    else renderDropdown(id, []);
-  } catch (e) {
+  var mySeq = ++searchSeq[id];
+  getAllProducts(function(products) {
     if (mySeq !== searchSeq[id]) return;
-    console.error('fetchProducts error:', e);
-    renderDropdown(id, []);
-  }
+    renderDropdown(id, searchLocal(products, q, ['pinming', 'shangjiaming']));
+  });
 }
 
 function renderDropdown(id, products) {
@@ -1179,18 +1223,12 @@ function onCustomerInput() {
   customerTimer = setTimeout(() => fetchCustomers(q), 200);
 }
 
-async function fetchCustomers(q) {
-  const mySeq = ++customerSeq;
-  try {
-    const data = await gasRequest({ action: 'getCustomers', q });
-    if (mySeq !== customerSeq) return; // 舊結果，丟棄
-    if (data.success) renderCustomerDropdown(data.customers);
-    else renderCustomerDropdown([]);
-  } catch(e) {
+function fetchCustomers(q) {
+  var mySeq = ++customerSeq;
+  getAllCustomers(function(customers) {
     if (mySeq !== customerSeq) return;
-    console.error('fetchCustomers error:', e);
-    renderCustomerDropdown([]);
-  }
+    renderCustomerDropdown(searchLocal(customers, q, ['name', 'realname', 'phone']));
+  });
 }
 
 function renderCustomerDropdown(customers) {
@@ -1365,18 +1403,13 @@ function onResendInput(id) {
   resendSearchTimers[id] = setTimeout(function() { fetchResendProducts(id, q); }, 200);
 }
 
-async function fetchResendProducts(id, q) {
+function fetchResendProducts(id, q) {
   if (!resendSeq[id]) resendSeq[id] = 0;
   var mySeq = ++resendSeq[id];
-  try {
-    var data = await gasRequest({ action: 'getProducts', q: q });
+  getAllProducts(function(products) {
     if (mySeq !== resendSeq[id]) return;
-    if (data.success) renderResendDropdown(id, data.products);
-    else renderResendDropdown(id, []);
-  } catch(e) {
-    if (mySeq !== resendSeq[id]) return;
-    renderResendDropdown(id, []);
-  }
+    renderResendDropdown(id, searchLocal(products, q, ['pinming', 'shangjiaming']));
+  });
 }
 
 function renderResendDropdown(id, products) {
@@ -1722,6 +1755,9 @@ function showToast(msg) {
 initAuth();
 initHeader();
 addProductItem();
+// 頁面載入後立即預載商品和客戶資料
+getAllProducts(function(p) { console.log('商品預載完成：' + p.length + ' 筆'); });
+getAllCustomers(function(c) { console.log('客戶預載完成：' + c.length + ' 筆'); });
 </script>
 </body>
 </html>
