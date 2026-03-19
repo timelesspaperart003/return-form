@@ -1280,10 +1280,15 @@ function showTripleCopy(data) {
         </table>
       </div>
 
-      <div class="copy-sign" style="${i === 1 ? 'grid-template-columns: 1fr 1fr;' : 'grid-template-columns: 1fr;'}">
+      <div class="copy-sign" style="grid-template-columns: ${i === 2 ? '1fr' : '1fr 1fr'};">
         ${i === 0 ? `
-        <div class="sign-cell" style="border-right:none;">
-          <div class="sign-label">負責人員</div>
+        <div class="sign-cell">
+          <div class="sign-label">出貨負責人員</div>
+          <div class="sign-line"></div>
+          <div style="font-size:10px;margin-top:4px;color:#bbb">簽名 / 日期</div>
+        </div>
+        <div class="sign-cell">
+          <div class="sign-label">退貨負責人員</div>
           <div class="sign-line"></div>
           <div style="font-size:10px;margin-top:4px;color:#bbb">簽名 / 日期</div>
         </div>` : ''}
