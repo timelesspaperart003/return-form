@@ -1574,13 +1574,6 @@ function showTripleCopy(data) {
         <tbody>${productRows}</tbody>
       </table>
 
-      <!-- 備註區 -->
-      ${data.note ? `
-      <div style="padding:8px 14px;border-top:1px solid #eee;font-size:12px;">
-        <span style="font-weight:700;color:#888;font-size:10px;letter-spacing:0.5px;">備註</span>
-        <div style="margin-top:3px;color:#1a1a2e;">${data.note}</div>
-      </div>` : ''}
-
       <!-- 補送區（有補送商品才顯示） -->
       ${data.resendItems && data.resendItems.length > 0 ? `
       <div style="border-top:1.5px solid #1a1a2e;">
