@@ -1278,20 +1278,17 @@ function showTripleCopy(data) {
         </table>
       </div>
 
-      <div class="copy-sign">
-        <div class="sign-cell">
+      <div class="copy-sign" style="${i === 2 ? 'grid-template-columns: 1fr 1fr;' : ''}">
+        ${i !== 2 ? `<div class="sign-cell">
           <div class="sign-label">負責人員</div>
           <div class="sign-line"></div>
           <div style="font-size:10px;margin-top:4px;color:#bbb">簽名 / 日期</div>
-        </div>
-        ${(i === 1) ? `
+        </div>` : ''}
         <div class="sign-cell">
           <div class="sign-label">物流簽收</div>
           <div class="sign-line"></div>
           <div style="font-size:10px;margin-top:4px;color:#bbb">簽名 / 日期</div>
-          <div style="font-size:10px;margin-top:8px;color:#888;font-weight:700;">車號 / 司機</div>
-          <div class="sign-line"></div>
-        </div>` : ''}
+        </div>
         <div class="sign-cell">
           <div class="sign-label">客戶簽收</div>
           <div class="sign-line"></div>
