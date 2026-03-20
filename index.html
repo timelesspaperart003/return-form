@@ -411,6 +411,9 @@ body {
 .btn-back:hover { background: #222; }
 .btn-new { background: var(--accent); color: #fff; }
 .btn-new:hover { background: #a93226; }
+.btn-send { background: #8e44ad; color: #fff; }
+.btn-send:hover { background: #6c3483; }
+.btn-send:disabled { background: #ccc; cursor: not-allowed; }
 
 /* 三聯單容器 */
 .tripcopy-container {
@@ -817,6 +820,7 @@ body {
     <div class="print-actions">
       <button class="btn-back" onclick="goBack()">← 上一步</button>
       <button class="btn-new" onclick="newForm()">📝 新增退貨單</button>
+      <button class="btn-send" id="btn-send" onclick="sendToShipSystem()">📤 送出至出貨系統</button>
       <button class="btn-download" onclick="downloadPDF()" id="btn-download">⬇ 下載 PDF</button>
       <button class="btn-print" onclick="window.print()">🖨️ 列印三聯單</button>
       <button class="btn-close-print" onclick="closePrint()">✕ 關閉</button>
@@ -832,6 +836,7 @@ body {
 const COMPANY_NAME = '公司名稱'; // ← 可修改成您的公司名稱
 const COMPANY_NAME_EN = 'COMPANY NAME';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwa7kjIICsM2d2x2N4myeJWMQaR97-q0polzW_C4n_sFyVyWcIG4vr6wgle1rHLRiMMtA/exec';
+const SHIP_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwYsxDR-6sOUyCpYaeTaXDuktg66aD51kSLoLrxSuVWyfbC-IlFWO-P-k3d3fKvwBHIzA/exec';
 
 // ============================================================
 // 退貨單號
@@ -1521,6 +1526,14 @@ async function submitForm() {
   btn.disabled = false;
   btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> 確認提交，產生三聯單';
 
+  _lastPayload = payload;
+  // 重設送出按鈕狀態
+  var sendBtn = document.getElementById('btn-send');
+  if (sendBtn) {
+    sendBtn.disabled = false;
+    sendBtn.textContent = '📤 送出至出貨系統';
+    sendBtn.style.background = '';
+  }
   showTripleCopy(payload);
 }
 
@@ -1729,6 +1742,42 @@ function newForm() {
   selectedProducts = {};
   addProductItem();
   window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ============================================================
+// 送出至出貨系統
+// ============================================================
+var _lastPayload = null;
+
+function sendToShipSystem() {
+  if (!_lastPayload) { showToast('⚠️ 尚未有退貨單資料'); return; }
+  var btn = document.getElementById('btn-send');
+  btn.disabled = true;
+  btn.textContent = '傳送中...';
+
+  fetch(SHIP_SCRIPT_URL, {
+    method: 'POST',
+    body: JSON.stringify({ action: 'saveReturn', token: AUTH_TOKEN, data: _lastPayload }),
+    headers: { 'Content-Type': 'text/plain' },
+    redirect: 'follow'
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(res) {
+    if (res.success) {
+      btn.textContent = '✅ 已送出';
+      btn.style.background = '#27ae60';
+      showToast('✅ 已成功寫入出貨系統');
+    } else {
+      btn.disabled = false;
+      btn.textContent = '📤 送出至出貨系統';
+      showToast('❌ 送出失敗：' + (res.error || '請稍後再試'));
+    }
+  })
+  .catch(function(e) {
+    btn.disabled = false;
+    btn.textContent = '📤 送出至出貨系統';
+    showToast('❌ 網路錯誤，請稍後再試');
+  });
 }
 
 // ============================================================
