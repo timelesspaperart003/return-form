@@ -835,7 +835,7 @@ body {
 // ============================================================
 const COMPANY_NAME = '公司名稱'; // ← 可修改成您的公司名稱
 const COMPANY_NAME_EN = 'COMPANY NAME';
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbySL7UkdJU3-CDZe0DvYpg1R5Q_EoF9yb0QBDx0gzcyIbRs5mwiL1C9ryDgAZBokuij/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwa7kjIICsM2d2x2N4myeJWMQaR97-q0polzW_C4n_sFyVyWcIG4vr6wgle1rHLRiMMtA/exec';
 
 // ============================================================
 // 退貨單號
@@ -950,7 +950,7 @@ function initAuth() {
 }
 
 // ============================================================
-// GAS 通用請求（JSONP 繞過 CORS）
+// GAS 通用請求（fetch 版本，支援 GET/POST）
 // ============================================================
 function gasRequest(params, method) {
   method = method || 'GET';
@@ -967,38 +967,20 @@ function gasRequest(params, method) {
       .catch(reject);
       return;
     }
-    // GET 用 JSONP（唯一能繞過 GAS CORS 的方式）
-    var cbName = 'cb_' + Date.now() + '_' + Math.floor(Math.random() * 10000);
+    // GET 用 fetch + redirect follow
     params.token = AUTH_TOKEN;
-    params.callback = cbName;
     var qs = Object.keys(params).map(function(k) {
       return k + '=' + encodeURIComponent(params[k]);
     }).join('&');
     var url = SCRIPT_URL + '?' + qs;
 
-    var script = document.createElement('script');
-    var timer = setTimeout(function() {
-      cleanup();
-      reject(new Error('timeout'));
-    }, 15000);
-
-    window[cbName] = function(data) {
-      cleanup();
-      resolve(data);
-    };
-
-    function cleanup() {
-      clearTimeout(timer);
-      delete window[cbName];
-      if (script.parentNode) script.parentNode.removeChild(script);
-    }
-
-    script.onerror = function() {
-      cleanup();
-      reject(new Error('script error'));
-    };
-    script.src = url;
-    document.head.appendChild(script);
+    fetch(url, {
+      method: 'GET',
+      redirect: 'follow'
+    })
+    .then(function(r) { return r.json(); })
+    .then(resolve)
+    .catch(reject);
   });
 }
 
