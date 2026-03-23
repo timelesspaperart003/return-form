@@ -836,7 +836,6 @@ body {
 const COMPANY_NAME = '公司名稱'; // ← 可修改成您的公司名稱
 const COMPANY_NAME_EN = 'COMPANY NAME';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwa7kjIICsM2d2x2N4myeJWMQaR97-q0polzW_C4n_sFyVyWcIG4vr6wgle1rHLRiMMtA/exec';
-const SHIP_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwYsxDR-6sOUyCpYaeTaXDuktg66aD51kSLoLrxSuVWyfbC-IlFWO-P-k3d3fKvwBHIzA/exec';
 
 // ============================================================
 // 退貨單號
@@ -1755,9 +1754,9 @@ function sendToShipSystem() {
   btn.disabled = true;
   btn.textContent = '傳送中...';
 
-  fetch(SHIP_SCRIPT_URL, {
+  fetch(SCRIPT_URL, {
     method: 'POST',
-    body: JSON.stringify({ action: 'saveReturn', token: AUTH_TOKEN, data: _lastPayload }),
+    body: JSON.stringify({ action: 'forwardToShipSystem', token: AUTH_TOKEN, data: _lastPayload }),
     headers: { 'Content-Type': 'text/plain' },
     redirect: 'follow'
   })
