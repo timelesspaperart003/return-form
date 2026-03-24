@@ -1232,7 +1232,7 @@ function fetchCustomers(q) {
   var mySeq = ++customerSeq;
   getAllCustomers(function(customers) {
     if (mySeq !== customerSeq) return;
-    renderCustomerDropdown(searchLocal(customers, q, ['name', 'realname', 'phone']));
+    renderCustomerDropdown(searchLocal(customers, q, ['label']));
   });
 }
 
@@ -1250,8 +1250,8 @@ function renderCustomerDropdown(customers) {
   dd.innerHTML = customers.map((c, i) => `
     <div class="dropdown-item" data-idx="${i}"
       onmousedown="selectCustomer(${i})">
-      <div>${c.name}</div>
-      <div class="sub">${c.name}${c.realname && c.realname !== c.name ? '　' + c.realname : ''}</div>
+      <div>${c.label}</div>
+      <div class="sub">${c.name}</div>
     </div>
   `).join('');
   dd.classList.add('open');
@@ -1261,8 +1261,8 @@ function selectCustomer(idx) {
   const c = customerItems[idx];
   if (!c) return;
 
-  document.getElementById('customer-search').value = c.name;   // 搜尋欄顯示 A欄名稱
-  document.getElementById('customer-name').value = c.realname || c.name; // 三聯單用 C欄姓名
+  document.getElementById('customer-search').value = c.label;   // 搜尋欄顯示 A欄名稱
+  document.getElementById('customer-name').value = c.name;      // 三聯單填入 C欄姓名
   document.getElementById('customer-phone').value = c.phone || '';
   document.getElementById('customer-address').value = c.address || '';
   document.getElementById('customer-detail').style.display = 'grid';
