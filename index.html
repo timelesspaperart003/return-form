@@ -835,7 +835,8 @@ body {
 // ============================================================
 const COMPANY_NAME = '公司名稱'; // ← 可修改成您的公司名稱
 const COMPANY_NAME_EN = 'COMPANY NAME';
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbySL7UkdJU3-CDZe0DvYpg1R5Q_EoF9yb0QBDx0gzcyIbRs5mwiL1C9ryDgAZBokuij/exec';
+const SCRIPT_URL     = 'https://script.google.com/macros/s/AKfycbySL7UkdJU3-CDZe0DvYpg1R5Q_EoF9yb0QBDx0gzcyIbRs5mwiL1C9ryDgAZBokuij/exec'; // GET 搜尋用（獨立型）
+const SCRIPT_URL_POST = 'https://script.google.com/macros/s/AKfycbwa7kjIICsM2d2x2N4myeJWMQaR97-q0polzW_C4n_sFyVyWcIG4vr6wgle1rHLRiMMtA/exec'; // POST 寫入用（容器繫結型）
 
 // ============================================================
 // 退貨單號
@@ -956,7 +957,7 @@ function gasRequest(params, method) {
   method = method || 'GET';
   return new Promise(function(resolve, reject) {
     if (method === 'POST') {
-      fetch(SCRIPT_URL, {
+      fetch(SCRIPT_URL_POST, {
         method: 'POST',
         body: JSON.stringify(params),
         headers: { 'Content-Type': 'text/plain' },
@@ -1754,7 +1755,7 @@ function sendToShipSystem() {
   btn.disabled = true;
   btn.textContent = '傳送中...';
 
-  fetch(SCRIPT_URL, {
+  fetch(SCRIPT_URL_POST, {
     method: 'POST',
     body: JSON.stringify({ action: 'forwardToShipSystem', token: AUTH_TOKEN, data: _lastPayload }),
     headers: { 'Content-Type': 'text/plain' },
