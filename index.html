@@ -1711,7 +1711,16 @@ function downloadPDF() {
       }
       pdf.addImage(canvas2.toDataURL('image/jpeg', 0.95), 'JPEG', margin, margin, imgW2, imgH2);
 
-      pdf.save(returnNo + '_三聯單.pdf');
+      var customerName = document.getElementById('customer-name').value.trim() || '';
+      var firstProduct = '';
+      var firstSearch = document.querySelector('#product-list .search-input');
+      if (firstSearch && firstSearch.value.trim()) firstProduct = firstSearch.value.trim();
+      var fileNameParts = [returnNo];
+      if (customerName) fileNameParts.push(customerName);
+      if (firstProduct) fileNameParts.push(firstProduct);
+      fileNameParts.push('三聯單');
+      var fileName = fileNameParts.join('_');
+      pdf.save(fileName + '.pdf');
       btn.disabled = false;
       btn.textContent = '⬇ 下載 PDF';
     });
