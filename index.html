@@ -1023,25 +1023,45 @@ body {
 .page-info { font-size: 12px; color: var(--ink-faint); font-family: 'DM Mono', monospace; }
 
 @media (max-width: 600px) {
-  /* 搜尋列：全部直向排列 */
+  /* 搜尋列：全部直向，按鈕撐滿 */
   .history-toolbar { flex-direction: column; }
   .history-toolbar .toolbar-field { min-width: 100%; }
+  .btn-history-clear,
+  .btn-history-search { width: 100%; justify-content: center; }
 
   /* 展開內容：單欄 */
   .expand-grid { grid-template-columns: 1fr; }
 
-  /* 表格：隱藏退貨原因、補送商品兩欄，只留單號/日期/客戶/退貨商品/按鈕 */
+  /* 表格：只留單號/日期/客戶/退貨商品，隱藏退貨原因和補送商品 */
   .history-table thead th:nth-child(4),
   .history-table td:nth-child(4),
   .history-table thead th:nth-child(6),
   .history-table td:nth-child(6) { display: none; }
 
-  /* 退貨單號縮小字 */
-  .td-returnno { font-size: 10px !important; }
+  /* 最後一欄（按鈕）固定不隱藏，但縮小 */
+  .history-table thead th:last-child,
+  .history-table td:last-child { 
+    padding: 6px 6px !important;
+  }
 
-  /* 商品 chips 限制寬度 */
-  .td-items { max-width: 100px; }
-  .item-chip { font-size: 10px; }
+  /* 退貨單號、日期縮小字 */
+  .td-returnno { font-size: 10px !important; }
+  .history-table td.mono { font-size: 10px; }
+
+  /* 商品 chips 限制 */
+  .td-items { max-width: 90px; }
+  .item-chip { font-size: 10px; padding: 2px 5px; }
+
+  /* 按鈕縮小 */
+  .btn-expand { 
+    font-size: 10px; 
+    padding: 3px 6px;
+    display: block;
+    margin-bottom: 3px;
+  }
+
+  /* 整體表格允許滾動（最後手段） */
+  .history-table-wrap { overflow-x: auto; }
 }
   
 </style>
