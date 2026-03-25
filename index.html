@@ -2066,6 +2066,9 @@ function showTripleCopy(data) {
 
 function closePrint() {
   document.getElementById('print-overlay').classList.remove('open');
+  // 恢復送出按鈕顯示
+  var sendBtn = document.getElementById('btn-send');
+  if (sendBtn) sendBtn.style.display = '';
 }
 
 function goBack() {
@@ -2348,7 +2351,10 @@ function renderHistoryPage() {
       '<td><span class="td-reason-badge ' + reasonCls + '">' + escHtml(reasonShort) + '</span></td>' +
       '<td class="td-items">'     + renderItemChips(r.items, false) + '</td>' +
       '<td class="td-items">'     + (r.resendItems && r.resendItems.length ? renderItemChips(r.resendItems, true) : '<span style="color:var(--ink-faint);font-size:12px">—</span>') + '</td>' +
-      '<td><button class="btn-expand" id="expand-btn-' + globalIdx + '">展開</button></td>';
+      '<td style="white-space:nowrap">' +
+  '<button class="btn-expand" id="expand-btn-' + globalIdx + '">展開</button> ' +
+  '<button class="btn-expand" style="color:var(--accent);border-color:var(--accent-light)" onclick="event.stopPropagation();printFromHistory(' + globalIdx + ')">🖨️ 列印</button>' +
+'</td>';
     tbody.appendChild(tr);
 
     var expandTr = document.createElement('tr');
@@ -2451,6 +2457,33 @@ function goHistPage(page) {
   document.getElementById('panel-history').scrollIntoView({ behavior:'smooth', block:'start' });
 }
 
+function printFromHistory(idx) {
+  var start = (_histPage - 1) * HIST_PAGE_SIZE;
+  var r = _filteredRecords[start + idx];
+  if (!r) return;
+
+  // 把歷史記錄格式轉成 showTripleCopy 需要的格式
+  var payload = {
+    returnNo:        r.returnNo,
+    returnDate:      r.returnDate,
+    customerName:    r.customerName,
+    customerPhone:   r.customerPhone   || '',
+    customerAddress: r.customerAddress || '',
+    reason:          r.reason          || '',
+    note:            r.note            || '',
+    items:           r.items           || [],
+    resendItems:     r.resendItems     || []
+  };
+
+  // 隱藏「送出至出貨系統」按鈕（歷史記錄已送過了）
+  var sendBtn = document.getElementById('btn-send');
+  if (sendBtn) {
+    sendBtn.style.display = 'none';
+  }
+
+  showTripleCopy(payload);
+}
+  
 function escHtml(str) {
   return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
