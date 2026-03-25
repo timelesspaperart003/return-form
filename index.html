@@ -702,6 +702,333 @@ body {
   .copy-sign { grid-template-columns: 1fr; }
   .sign-cell { border-right: none; border-top: 1px solid #ccc; }
 }
+/* ══════════════════════════════════════
+   Tab Navigation
+══════════════════════════════════════ */
+.tab-nav {
+  background: var(--ink);
+  display: flex;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  position: sticky;
+  top: 62px;
+  z-index: 99;
+}
+.tab-btn {
+  flex: 1;
+  padding: 11px 0;
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.45);
+  font-size: 13px;
+  font-family: 'Noto Sans TC', sans-serif;
+  font-weight: 700;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: color 0.2s;
+  border-bottom: 3px solid transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.tab-btn.active { color: #fff; border-bottom-color: var(--accent); }
+.tab-btn:hover:not(.active) { color: rgba(255,255,255,0.75); }
+
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* ══════════════════════════════════════
+   歷史記錄分頁
+══════════════════════════════════════ */
+.history-container {
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+.history-toolbar {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+  padding: 16px 20px;
+  margin-bottom: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: flex-end;
+}
+.history-toolbar .toolbar-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  flex: 1;
+  min-width: 140px;
+}
+.history-toolbar .toolbar-field label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ink-faint);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+.history-toolbar input[type="text"],
+.history-toolbar input[type="date"] {
+  border: 1.5px solid var(--border);
+  border-radius: 9px;
+  padding: 9px 12px;
+  font-size: 14px;
+  font-family: 'Noto Sans TC', sans-serif;
+  color: var(--ink);
+  background: #fff;
+  transition: border-color 0.2s;
+  width: 100%;
+}
+.history-toolbar input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-light);
+}
+.btn-history-search {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 9px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-family: 'Noto Sans TC', sans-serif;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+  white-space: nowrap;
+  align-self: flex-end;
+  height: 40px;
+}
+.btn-history-search:hover { background: #a93226; }
+.btn-history-clear {
+  background: none;
+  color: var(--ink-faint);
+  border: 1.5px solid var(--border);
+  border-radius: 9px;
+  padding: 10px 14px;
+  font-size: 13px;
+  font-family: 'Noto Sans TC', sans-serif;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+  align-self: flex-end;
+  height: 40px;
+}
+.btn-history-clear:hover { border-color: var(--accent); color: var(--accent); }
+.history-stats {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+.stat-badge {
+  background: #fff;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  padding: 8px 14px;
+  font-size: 12px;
+  color: var(--ink-light);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: var(--shadow);
+}
+.stat-badge strong {
+  font-size: 18px;
+  font-weight: 900;
+  font-family: 'DM Mono', monospace;
+  color: var(--ink);
+}
+.history-table-wrap {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+.history-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.history-table thead th {
+  background: var(--ink);
+  color: #fff;
+  padding: 11px 14px;
+  text-align: left;
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+.history-table tbody tr {
+  border-bottom: 1px solid var(--border);
+  transition: background 0.1s;
+  cursor: pointer;
+}
+.history-table tbody tr:last-child { border-bottom: none; }
+.history-table tbody tr:hover { background: var(--accent-bg); }
+.history-table td {
+  padding: 11px 14px;
+  vertical-align: middle;
+  color: var(--ink);
+}
+.history-table td.mono {
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  color: var(--ink-light);
+}
+.td-returnno {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--accent) !important;
+}
+.td-reason-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+.reason-defect { background: #fdf3e7; color: #e67e22; }
+.reason-repair { background: #e8f6f3; color: #1a8a6f; }
+.reason-wrong  { background: #fdf5f4; color: var(--accent); }
+.reason-other  { background: #f0f0f8; color: #6c6ca0; }
+.td-items { max-width: 200px; }
+.item-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+.item-chip {
+  background: var(--paper);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 2px 7px;
+  font-size: 11px;
+  color: var(--ink-light);
+  white-space: nowrap;
+}
+.item-chip .chip-qty {
+  font-family: 'DM Mono', monospace;
+  font-weight: 700;
+  color: var(--ink);
+  margin-left: 3px;
+}
+.resend-chip { background: #fdf5f4; border-color: var(--accent-light); color: var(--accent); }
+.btn-expand {
+  background: none;
+  border: 1.5px solid var(--border);
+  border-radius: 7px;
+  padding: 3px 10px;
+  font-size: 11px;
+  color: var(--ink-faint);
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.btn-expand:hover { border-color: var(--accent); color: var(--accent); }
+.expand-row { display: none; }
+.expand-row.open { display: table-row; }
+.expand-cell {
+  background: var(--paper);
+  padding: 16px 20px !important;
+  border-bottom: 2px solid var(--border) !important;
+}
+.expand-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.expand-section-title {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: var(--ink-faint);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.expand-item-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+.expand-item-row:last-child { border-bottom: none; }
+.expand-item-name { flex: 1; color: var(--ink); font-weight: 500; }
+.expand-item-qty {
+  font-family: 'DM Mono', monospace;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--accent);
+  min-width: 32px;
+  text-align: right;
+}
+.expand-note {
+  font-size: 12px;
+  color: var(--ink-light);
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: #fff;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+.history-loading {
+  text-align: center;
+  padding: 48px 20px;
+  color: var(--ink-faint);
+  font-size: 14px;
+}
+.history-loading .spinner {
+  width: 32px; height: 32px;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 0 auto 12px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.history-empty {
+  text-align: center;
+  padding: 48px 20px;
+  color: var(--ink-faint);
+  font-size: 14px;
+}
+.history-empty .empty-icon { font-size: 40px; margin-bottom: 12px; }
+.history-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 0 16px;
+  flex-wrap: wrap;
+}
+.page-btn {
+  background: #fff;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 13px;
+  font-size: 13px;
+  font-family: 'DM Mono', monospace;
+  color: var(--ink-light);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.page-btn:hover { border-color: var(--accent); color: var(--accent); }
+.page-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 700; }
+.page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.page-info { font-size: 12px; color: var(--ink-faint); font-family: 'DM Mono', monospace; }
+
+@media (max-width: 600px) {
+  .history-toolbar { flex-direction: column; }
+  .expand-grid { grid-template-columns: 1fr; }
+  .history-table thead th:nth-child(4),
+  .history-table td:nth-child(4) { display: none; }
+}
+  
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -730,9 +1057,21 @@ body {
   </div>
   <span class="header-badge" id="return-no-badge">載入中...</span>
 </div>
+<!-- Tab Navigation -->
+<div class="tab-nav">
+  <button class="tab-btn active" id="tab-form-btn" onclick="switchTab('form')">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+    新增退貨單
+  </button>
+  <button class="tab-btn" id="tab-history-btn" onclick="switchTab('history')">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+    歷史記錄
+  </button>
+</div>
 
 
-
+<!-- ═══ 分頁：新增退貨單 ═══ -->
+<div class="tab-panel active" id="panel-form">
 <div class="container" style="margin-top:16px">
 
   <!-- 客戶資訊 -->
@@ -810,7 +1149,75 @@ body {
     確認提交，產生三聯單
   </button>
 </div>
+</div><!-- /panel-form -->
 
+<!-- ═══ 分頁：歷史記錄 ═══ -->
+<div class="tab-panel" id="panel-history">
+<div class="history-container" style="margin-top:16px">
+
+  <div class="history-toolbar">
+    <div class="toolbar-field">
+      <label>退貨單號</label>
+      <input type="text" id="hist-search-no" placeholder="RT-20250101-123" oninput="applyHistoryFilter()">
+    </div>
+    <div class="toolbar-field">
+      <label>客戶姓名</label>
+      <input type="text" id="hist-search-name" placeholder="輸入姓名..." oninput="applyHistoryFilter()">
+    </div>
+    <div class="toolbar-field">
+      <label>開始日期</label>
+      <input type="date" id="hist-date-from" onchange="applyHistoryFilter()">
+    </div>
+    <div class="toolbar-field">
+      <label>結束日期</label>
+      <input type="date" id="hist-date-to" onchange="applyHistoryFilter()">
+    </div>
+    <button class="btn-history-clear" onclick="clearHistoryFilter()">清除</button>
+    <button class="btn-history-search" onclick="loadHistory(true)">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle;margin-right:4px"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      重新載入
+    </button>
+  </div>
+
+  <div class="history-stats" id="history-stats" style="display:none">
+    <div class="stat-badge">
+      共 <strong id="stat-total">0</strong> 筆
+    </div>
+    <div class="stat-badge">
+      篩選結果 <strong id="stat-filtered">0</strong> 筆
+    </div>
+  </div>
+
+  <div class="history-table-wrap">
+    <div class="history-loading" id="history-loading" style="display:none">
+      <div class="spinner"></div>
+      載入歷史記錄中...
+    </div>
+    <div class="history-empty" id="history-empty" style="display:none">
+      <div class="empty-icon">📭</div>
+      <div>目前沒有符合條件的退貨記錄</div>
+    </div>
+    <table class="history-table" id="history-table" style="display:none">
+      <thead>
+        <tr>
+          <th>退貨單號</th>
+          <th>日期</th>
+          <th>客戶姓名</th>
+          <th>退貨原因</th>
+          <th>退貨商品</th>
+          <th>補送商品</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="history-tbody"></tbody>
+    </table>
+  </div>
+
+  <div class="history-pagination" id="history-pagination"></div>
+
+</div>
+</div><!-- /panel-history -->
+  
 <!-- Toast -->
 <div class="toast" id="toast"></div>
 
@@ -1534,6 +1941,7 @@ async function submitForm() {
     sendBtn.textContent = '📤 送出至出貨系統';
     sendBtn.style.background = '';
   }
+  _historyLoaded = false;
   showTripleCopy(payload);
 }
 
@@ -1750,6 +2158,7 @@ function newForm() {
   productCount = 0;
   selectedProducts = {};
   addProductItem();
+  switchTab('form');
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -1802,6 +2211,249 @@ function showToast(msg) {
 // ============================================================
 // Init
 // ============================================================
+// ============================================================
+// Tab 切換
+// ============================================================
+function switchTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-' + tab + '-btn').classList.add('active');
+  document.getElementById('panel-' + tab).classList.add('active');
+  if (tab === 'history') {
+    if (!_historyLoaded) loadHistory();
+    document.getElementById('return-no-badge').textContent = '歷史記錄';
+  } else {
+    document.getElementById('return-no-badge').textContent = currentReturnNo;
+  }
+}
+
+// ============================================================
+// 歷史記錄
+// ============================================================
+var _historyLoaded   = false;
+var _allRecords      = [];
+var _filteredRecords = [];
+var _expandedRows    = {};
+var HIST_PAGE_SIZE   = 20;
+var _histPage        = 1;
+
+function loadHistory(forceReload) {
+  if (_historyLoaded && !forceReload) return;
+  _historyLoaded = false;
+  document.getElementById('history-loading').style.display = 'block';
+  document.getElementById('history-empty').style.display   = 'none';
+  document.getElementById('history-table').style.display   = 'none';
+  document.getElementById('history-stats').style.display   = 'none';
+  document.getElementById('history-pagination').innerHTML  = '';
+
+  gasRequest({ action: 'getHistory', limit: 9999 })
+    .then(function(data) {
+      document.getElementById('history-loading').style.display = 'none';
+      if (data && data.success && data.records && data.records.length > 0) {
+        _allRecords    = data.records;
+        _historyLoaded = true;
+        applyHistoryFilter();
+        document.getElementById('history-stats').style.display = 'flex';
+        document.getElementById('stat-total').textContent = _allRecords.length;
+      } else {
+        _allRecords = [];
+        document.getElementById('history-empty').style.display = 'block';
+      }
+    })
+    .catch(function() {
+      document.getElementById('history-loading').style.display = 'none';
+      document.getElementById('history-empty').innerHTML =
+        '<div class="empty-icon">⚠️</div><div>載入失敗，請確認 GAS 設定</div>';
+      document.getElementById('history-empty').style.display = 'block';
+    });
+}
+
+function applyHistoryFilter() {
+  var qNo   = (document.getElementById('hist-search-no').value   || '').toLowerCase().trim();
+  var qName = (document.getElementById('hist-search-name').value || '').toLowerCase().trim();
+  var dFrom = document.getElementById('hist-date-from').value;
+  var dTo   = document.getElementById('hist-date-to').value;
+
+  _filteredRecords = _allRecords.filter(function(r) {
+    if (qNo   && r.returnNo.toLowerCase().indexOf(qNo)       === -1) return false;
+    if (qName && r.customerName.toLowerCase().indexOf(qName) === -1) return false;
+    if (dFrom || dTo) {
+      var rDate = parseHistDate(r.returnDate);
+      if (rDate) {
+        if (dFrom && rDate < new Date(dFrom)) return false;
+        if (dTo   && rDate > new Date(dTo + 'T23:59:59')) return false;
+      }
+    }
+    return true;
+  });
+
+  document.getElementById('stat-filtered').textContent = _filteredRecords.length;
+  _histPage     = 1;
+  _expandedRows = {};
+  renderHistoryPage();
+}
+
+function parseHistDate(str) {
+  if (!str) return null;
+  var m = str.match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})/);
+  if (m) return new Date(parseInt(m[1]), parseInt(m[2])-1, parseInt(m[3]));
+  return null;
+}
+
+function clearHistoryFilter() {
+  document.getElementById('hist-search-no').value   = '';
+  document.getElementById('hist-search-name').value = '';
+  document.getElementById('hist-date-from').value   = '';
+  document.getElementById('hist-date-to').value     = '';
+  applyHistoryFilter();
+}
+
+function renderHistoryPage() {
+  var total    = _filteredRecords.length;
+  var maxPage  = Math.max(1, Math.ceil(total / HIST_PAGE_SIZE));
+  _histPage    = Math.min(_histPage, maxPage);
+  var start    = (_histPage - 1) * HIST_PAGE_SIZE;
+  var pageData = _filteredRecords.slice(start, start + HIST_PAGE_SIZE);
+  var table    = document.getElementById('history-table');
+  var empty    = document.getElementById('history-empty');
+
+  if (!total) {
+    table.style.display = 'none';
+    empty.style.display = 'block';
+    empty.innerHTML     = '<div class="empty-icon">📭</div><div>目前沒有符合條件的退貨記錄</div>';
+    document.getElementById('history-pagination').innerHTML = '';
+    return;
+  }
+
+  empty.style.display = 'none';
+  table.style.display = 'table';
+
+  var tbody = document.getElementById('history-tbody');
+  tbody.innerHTML = '';
+
+  pageData.forEach(function(r, idx) {
+    var globalIdx   = start + idx;
+    var reasonCls   = getReasonClass(r.reason);
+    var reasonShort = r.reason.length > 12 ? r.reason.slice(0,12) + '…' : r.reason;
+
+    var tr    = document.createElement('tr');
+    tr.id     = 'hist-row-' + globalIdx;
+    tr.onclick = function() { toggleExpandRow(globalIdx); };
+    tr.innerHTML =
+      '<td class="td-returnno">'  + escHtml(r.returnNo) + '</td>' +
+      '<td class="mono">'         + escHtml(r.returnDate) + '</td>' +
+      '<td><strong>'              + escHtml(r.customerName) + '</strong>' +
+        (r.customerPhone ? '<br><span style="font-size:11px;color:var(--ink-faint)">' + escHtml(r.customerPhone) + '</span>' : '') +
+      '</td>' +
+      '<td><span class="td-reason-badge ' + reasonCls + '">' + escHtml(reasonShort) + '</span></td>' +
+      '<td class="td-items">'     + renderItemChips(r.items, false) + '</td>' +
+      '<td class="td-items">'     + (r.resendItems && r.resendItems.length ? renderItemChips(r.resendItems, true) : '<span style="color:var(--ink-faint);font-size:12px">—</span>') + '</td>' +
+      '<td><button class="btn-expand" id="expand-btn-' + globalIdx + '">展開</button></td>';
+    tbody.appendChild(tr);
+
+    var expandTr = document.createElement('tr');
+    expandTr.className = 'expand-row';
+    expandTr.id        = 'hist-expand-' + globalIdx;
+    var expandTd       = document.createElement('td');
+    expandTd.className = 'expand-cell';
+    expandTd.colSpan   = 7;
+    expandTd.innerHTML = buildExpandContent(r);
+    expandTr.appendChild(expandTd);
+    tbody.appendChild(expandTr);
+  });
+
+  renderPagination(maxPage);
+}
+
+function renderItemChips(items, isResend) {
+  if (!items || !items.length) return '<span style="color:var(--ink-faint);font-size:12px">—</span>';
+  var cls = isResend ? 'item-chip resend-chip' : 'item-chip';
+  return '<div class="item-chips">' +
+    items.slice(0, 3).map(function(item) {
+      var name = item.pinming.length > 8 ? item.pinming.slice(0,8) + '…' : item.pinming;
+      return '<span class="' + cls + '">' + escHtml(name) + '<span class="chip-qty">×' + item.qty + '</span></span>';
+    }).join('') +
+    (items.length > 3 ? '<span class="item-chip" style="color:var(--ink-faint)">+' + (items.length-3) + '</span>' : '') +
+  '</div>';
+}
+
+function buildExpandContent(r) {
+  var itemsHtml = '<div class="expand-section-title">退貨商品明細</div>';
+  if (r.items && r.items.length) {
+    itemsHtml += r.items.map(function(item) {
+      return '<div class="expand-item-row">' +
+        '<span class="expand-item-name">' + escHtml(item.pinming) +
+          (item.shangjiaming ? ' <span style="color:var(--ink-faint);font-size:11px">(' + escHtml(item.shangjiaming) + ')</span>' : '') +
+        '</span>' +
+        '<span class="expand-item-qty">×' + item.qty + '</span>' +
+      '</div>';
+    }).join('');
+  } else {
+    itemsHtml += '<div style="color:var(--ink-faint);font-size:13px;padding:6px 0">無退貨商品</div>';
+  }
+
+  var resendHtml = '<div class="expand-section-title">補送商品明細</div>';
+  if (r.resendItems && r.resendItems.length) {
+    resendHtml += r.resendItems.map(function(item) {
+      return '<div class="expand-item-row">' +
+        '<span class="expand-item-name" style="color:var(--accent)">' + escHtml(item.pinming) + '</span>' +
+        '<span class="expand-item-qty">×' + item.qty + '</span>' +
+      '</div>';
+    }).join('');
+  } else {
+    resendHtml += '<div style="color:var(--ink-faint);font-size:13px;padding:6px 0">無補送商品</div>';
+  }
+
+  var noteHtml = '';
+  if (r.note)            noteHtml += '<div class="expand-note"><strong style="font-size:11px;color:var(--ink-faint)">備註：</strong>' + escHtml(r.note) + '</div>';
+  if (r.customerAddress) noteHtml += '<div class="expand-note" style="margin-top:6px"><strong style="font-size:11px;color:var(--ink-faint)">地址：</strong>' + escHtml(r.customerAddress) + '</div>';
+
+  return '<div class="expand-grid"><div>' + itemsHtml + '</div><div>' + resendHtml + '</div></div>' + noteHtml;
+}
+
+function toggleExpandRow(idx) {
+  var expandRow = document.getElementById('hist-expand-' + idx);
+  var btn       = document.getElementById('expand-btn-'  + idx);
+  if (!expandRow) return;
+  var isOpen = expandRow.classList.contains('open');
+  expandRow.classList.toggle('open', !isOpen);
+  btn.textContent = isOpen ? '展開' : '收起';
+}
+
+function getReasonClass(reason) {
+  if (!reason) return 'reason-other';
+  if (reason.indexOf('瑕疵') !== -1)                              return 'reason-defect';
+  if (reason.indexOf('修補') !== -1 || reason.indexOf('補完') !== -1) return 'reason-repair';
+  if (reason.indexOf('錯款') !== -1)                              return 'reason-wrong';
+  return 'reason-other';
+}
+
+function renderPagination(maxPage) {
+  var pg = document.getElementById('history-pagination');
+  if (maxPage <= 1) { pg.innerHTML = ''; return; }
+  var html = '';
+  html += '<button class="page-btn" onclick="goHistPage(' + (_histPage-1) + ')"' + (_histPage<=1?' disabled':'') + '>‹</button>';
+  var s = Math.max(1, _histPage-2), e = Math.min(maxPage, _histPage+2);
+  if (s > 1) html += '<button class="page-btn" onclick="goHistPage(1)">1</button>' + (s>2?'<span class="page-info">…</span>':'');
+  for (var p = s; p <= e; p++)
+    html += '<button class="page-btn' + (p===_histPage?' active':'') + '" onclick="goHistPage('+p+')">'+p+'</button>';
+  if (e < maxPage) html += (e<maxPage-1?'<span class="page-info">…</span>':'') + '<button class="page-btn" onclick="goHistPage('+maxPage+')">'+maxPage+'</button>';
+  html += '<button class="page-btn" onclick="goHistPage(' + (_histPage+1) + ')"' + (_histPage>=maxPage?' disabled':'') + '>›</button>';
+  html += '<span class="page-info">第 ' + _histPage + ' / ' + maxPage + ' 頁</span>';
+  pg.innerHTML = html;
+}
+
+function goHistPage(page) {
+  var maxPage = Math.ceil(_filteredRecords.length / HIST_PAGE_SIZE);
+  _histPage   = Math.max(1, Math.min(page, maxPage));
+  _expandedRows = {};
+  renderHistoryPage();
+  document.getElementById('panel-history').scrollIntoView({ behavior:'smooth', block:'start' });
+}
+
+function escHtml(str) {
+  return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
 initAuth();
 initHeader();
 addProductItem();
