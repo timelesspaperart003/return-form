@@ -1764,28 +1764,28 @@ function sendToShipSystem() {
   btn.disabled = true;
   btn.textContent = '傳送中...';
 
-  var payload = Object.assign({}, _lastPayload, {
-    action: 'forwardToShipSystem',
-    token: AUTH_TOKEN
-  });
-
   fetch(SCRIPT_URL_POST, {
     method: 'POST',
-    body: JSON.stringify(payload),
     headers: { 'Content-Type': 'text/plain' },
+    body: JSON.stringify({ action: 'forwardToShipSystem', token: AUTH_TOKEN, data: _lastPayload }),
     redirect: 'follow'
   })
   .then(function(r) { return r.json(); })
-  .then(function(data) {
-    btn.textContent = '✅ 已送出';
-    btn.style.background = '#27ae60';
-    showToast('✅ 已送出至出貨系統');
+  .then(function(result) {
+    if (result && result.success) {
+      btn.textContent = '✅ 已送出';
+      btn.style.background = '#27ae60';
+      showToast('✅ 已送出至出貨系統');
+    } else {
+      btn.disabled = false;
+      btn.textContent = '📤 送出至出貨系統';
+      showToast('❌ 送出失敗：' + (result && result.error ? result.error : '未知錯誤'));
+    }
   })
-  .catch(function(e) {
-    // GAS 302 redirect 常導致 CORS 錯誤，但資料通常已成功寫入
-    btn.textContent = '✅ 已送出';
-    btn.style.background = '#27ae60';
-    showToast('✅ 已送出至出貨系統');
+  .catch(function(err) {
+    btn.disabled = false;
+    btn.textContent = '📤 送出至出貨系統';
+    showToast('❌ 網路錯誤，請再試一次');
   });
 }
 
