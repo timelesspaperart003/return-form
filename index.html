@@ -1109,6 +1109,12 @@ body {
     display: inline-block;
     vertical-align: middle;
   }
+  /* 手機列印時取消最小高度，避免多印一頁 */
+  @media (max-width: 600px) {
+    .copy-1 {
+      min-height: unset !important;
+    }
+  }
 }
   
 </style>
