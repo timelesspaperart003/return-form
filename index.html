@@ -1062,6 +1062,28 @@ body {
 
   /* 整體表格允許滾動（最後手段） */
   .history-table-wrap { overflow-x: auto; }
+  /* 按鈕改為橫向並排，縮小間距 */
+  .btn-expand {
+    display: inline-block;
+    margin-bottom: 0;
+    font-size: 10px;
+    padding: 3px 5px;
+  }
+
+  /* 退貨單號允許換行，不截斷 */
+  .td-returnno {
+    font-size: 10px !important;
+    word-break: break-all;
+    min-width: 70px;
+  }
+
+  /* 按鈕欄縮到最小 */
+  .history-table td:last-child,
+  .history-table th:last-child {
+    width: 1%;
+    white-space: nowrap;
+    padding: 4px 4px !important;
+  }
 }
   
 </style>
