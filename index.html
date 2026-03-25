@@ -1097,6 +1097,18 @@ body {
     -webkit-appearance: none;
     appearance: none;
   }
+  /* 退貨商品欄限制寬度，超出用...省略 */
+  .history-table td:nth-child(5) {
+    max-width: 80px;
+    overflow: hidden;
+  }
+  .item-chip {
+    max-width: 70px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    vertical-align: middle;
+  }
 }
   
 </style>
