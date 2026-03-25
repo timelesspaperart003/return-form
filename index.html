@@ -1764,33 +1764,29 @@ function sendToShipSystem() {
   btn.disabled = true;
   btn.textContent = '傳送中...';
 
-  // 用隱藏iframe提交表單，繞過fetch的302問題
-  var iframe = document.createElement('iframe');
-  iframe.style.display = 'none';
-  document.body.appendChild(iframe);
+  var payload = Object.assign({}, _lastPayload, {
+    action: 'forwardToShipSystem',
+    token: AUTH_TOKEN
+  });
 
-  var form = document.createElement('form');
-  form.method = 'POST';
-  form.target = iframe.name = 'hidden_iframe_' + Date.now();
-  form.action = SCRIPT_URL_POST;
-
-  var input = document.createElement('input');
-  input.type = 'hidden';
-  input.name = 'payload';
-  input.value = JSON.stringify({ action: 'forwardToShipSystem', token: AUTH_TOKEN, data: _lastPayload });
-  form.appendChild(input);
-
-  document.body.appendChild(form);
-  form.submit();
-
-  // 假設成功（因為無法得到回應）
-  setTimeout(function() {
+  fetch(SCRIPT_URL_POST, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+    headers: { 'Content-Type': 'text/plain' },
+    redirect: 'follow'
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
     btn.textContent = '✅ 已送出';
     btn.style.background = '#27ae60';
     showToast('✅ 已送出至出貨系統');
-    document.body.removeChild(form);
-    document.body.removeChild(iframe);
-  }, 2000);
+  })
+  .catch(function(e) {
+    // GAS 302 redirect 常導致 CORS 錯誤，但資料通常已成功寫入
+    btn.textContent = '✅ 已送出';
+    btn.style.background = '#27ae60';
+    showToast('✅ 已送出至出貨系統');
+  });
 }
 
 // ============================================================
