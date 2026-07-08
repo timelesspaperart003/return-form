@@ -1513,15 +1513,22 @@ function getAllProducts(callback) {
   _productCallbacks.push(callback);
   if (_loadingProducts) return;
   _loadingProducts = true;
-  gasRequest({ action: 'getProducts', q: '' }).then(function(data) {
-    _allProducts = (data.success && data.products) ? data.products : [];
-    _productCallbacks.forEach(function(cb) { cb(_allProducts); });
-    _productCallbacks = [];
-  }).catch(function() {
-    _allProducts = [];
-    _productCallbacks.forEach(function(cb) { cb([]); });
-    _productCallbacks = [];
-  });
+  // 改讀 GitHub 上的靜態快取 products.json（每天由 GAS 觸發器更新），
+  // 不再走 JSONP 預載整張產品表 → 避免逾時的 cb_xxx is not defined、搜尋瞬間。
+  fetch('products.json?t=' + Date.now())
+    .then(function(r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    })
+    .then(function(data) {
+      _allProducts = (data && data.products) ? data.products : [];
+      _productCallbacks.forEach(function(cb) { cb(_allProducts); });
+      _productCallbacks = [];
+    }).catch(function() {
+      _allProducts = [];
+      _productCallbacks.forEach(function(cb) { cb([]); });
+      _productCallbacks = [];
+    });
 }
 
 function getAllCustomers(callback) {
