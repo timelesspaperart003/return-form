@@ -1151,7 +1151,13 @@ body {
     <img src="logo.png" alt="Logo" style="height:36px;object-fit:contain;">
     <span>RETURN REQUEST FORM</span>
   </div>
-  <span class="header-badge" id="return-no-badge">載入中...</span>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <span id="user-box" style="display:none;align-items:center;gap:6px;color:#fff;font-size:13px;white-space:nowrap;">
+      👤 <span id="user-name"></span>
+      <button type="button" onclick="logout()" style="background:transparent;border:1px solid rgba(255,255,255,0.5);color:#fff;border-radius:6px;padding:2px 8px;font-size:12px;cursor:pointer;">登出</button>
+    </span>
+    <span class="header-badge" id="return-no-badge">載入中...</span>
+  </div>
 </div>
 <!-- Tab Navigation -->
 <div class="tab-nav">
@@ -1302,6 +1308,7 @@ body {
           <th>退貨原因</th>
           <th>退貨商品</th>
           <th>補送商品</th>
+          <th>填單人</th>
           <th></th>
         </tr>
       </thead>
@@ -1427,30 +1434,78 @@ function changeQty(id, delta) {
 // ============================================================
 // 密碼驗證
 // ============================================================
-const ACCESS_PASSWORD = 'timeless'; // ← 請改成您想要的密碼
+// 帳號密碼放在後端 GAS 的「指令碼屬性」（ACCOUNT_名稱 = 密碼），網頁原始碼裡沒有密碼。
+// 登入成功後端回傳名稱＋登入憑證(session)，送單時帶憑證，由後端認定填單人。
 const AUTH_TOKEN = 'RT_timeless'; // 傳給 API 的 token
 
+function ssGet(k) { try { return sessionStorage.getItem(k) || ''; } catch (e) { return ''; } }
+function ssSet(k, v) { try { sessionStorage.setItem(k, v); } catch (e) {} }
+function ssDel(k) { try { sessionStorage.removeItem(k); } catch (e) {} }
+
+function currentUserName() { return ssGet('authName'); }
+function currentSession()  { return ssGet('authSession'); }
+
+var _loginBusy = false;
 function checkPassword() {
-  const input = document.getElementById('pw-input').value;
+  if (_loginBusy) return;
+  const inputEl = document.getElementById('pw-input');
   const errorEl = document.getElementById('pw-error');
-  if (input === ACCESS_PASSWORD) {
-    document.getElementById('password-overlay').classList.add('hidden');
-    sessionStorage.setItem('auth', '1');
-    errorEl.textContent = '';
-  } else {
-    errorEl.textContent = '密碼錯誤，請再試一次';
-    const inputEl = document.getElementById('pw-input');
+  const btn = document.querySelector('#password-overlay .pw-btn');
+  const input = inputEl.value;
+  if (!input) return;
+
+  function fail(msg) {
+    errorEl.textContent = msg;
     inputEl.classList.add('error');
     inputEl.value = '';
     setTimeout(() => inputEl.classList.remove('error'), 400);
   }
+
+  _loginBusy = true;
+  btn.disabled = true;
+  btn.textContent = '驗證中...';
+  errorEl.textContent = '';
+  gasRequest({ action: 'login', token: AUTH_TOKEN, password: input }, 'POST')
+    .then(function(res) {
+      if (res && res.success && res.session) {
+        ssSet('authSession', res.session);
+        ssSet('authName', res.name || '');
+        inputEl.value = '';
+        applyLoginState();
+      } else {
+        fail('密碼錯誤，請再試一次');
+      }
+    })
+    .catch(function() { fail('連線失敗，請再試一次'); })
+    .then(function() {
+      _loginBusy = false;
+      btn.disabled = false;
+      btn.textContent = '確認登入';
+    });
 }
 
-// 頁面載入時檢查是否已驗證
-function initAuth() {
-  if (sessionStorage.getItem('auth') === '1') {
-    document.getElementById('password-overlay').classList.add('hidden');
+function applyLoginState() {
+  var name = currentUserName();
+  var loggedIn = !!currentSession();
+  document.getElementById('password-overlay').classList.toggle('hidden', loggedIn);
+  var box = document.getElementById('user-box');
+  if (box) {
+    box.style.display = loggedIn ? 'flex' : 'none';
+    document.getElementById('user-name').textContent = name;
   }
+}
+
+function logout() {
+  ssDel('authSession');
+  ssDel('authName');
+  ssDel('auth');
+  applyLoginState();
+  document.getElementById('pw-input').focus();
+}
+
+// 頁面載入時檢查是否已登入（舊版只存 auth=1、沒有憑證的，要重新登入）
+function initAuth() {
+  applyLoginState();
 }
 
 // ============================================================
@@ -2047,6 +2102,7 @@ async function submitForm() {
       : document.getElementById('return-reason').value),
     note: document.getElementById('return-note').value.trim(),
     resendItems: getResendItems(),
+    createdBy: currentUserName(), // 只用於三聯單顯示；寫入試算表的填單人由後端依登入憑證決定
     items
   };
 
@@ -2111,6 +2167,7 @@ function showTripleCopy(data) {
         <div class="meta-cell"><span class="label">聯絡電話</span><span class="val">${data.customerPhone}</span></div>
         ${data.customerAddress ? `<div class="meta-cell" style="grid-column:1/-1;border-right:none"><span class="label">客戶地址</span><span class="val">${data.customerAddress}</span></div>` : ''}
         ${(data.reason || data.note) ? `<div class="meta-cell" style="border-right:1px solid #ccc"><span class="label">退貨原因</span><span class="val">${data.reason || '—'}</span></div><div class="meta-cell" style="border-right:none"><span class="label">備註</span><span class="val">${data.note || '—'}</span></div>` : ''}
+        ${data.createdBy ? `<div class="meta-cell" style="grid-column:1/-1;border-right:none"><span class="label">填單人</span><span class="val">${escHtml(data.createdBy)}</span></div>` : ''}
       </div>
 
       <table class="copy-table">
@@ -2310,11 +2367,18 @@ function sendToShipSystem() {
   fetch(SCRIPT_URL_POST, {
     method: 'POST',
     headers: { 'Content-Type': 'text/plain' },
-    body: JSON.stringify({ action: 'forwardToShipSystem', token: AUTH_TOKEN, data: _lastPayload }),
+    body: JSON.stringify({ action: 'forwardToShipSystem', token: AUTH_TOKEN, session: currentSession(), data: _lastPayload }),
     redirect: 'follow'
   })
   .then(function(r) { return r.json(); })
   .then(function(result) {
+    if (result && result.needLogin) {
+      btn.disabled = false;
+      btn.textContent = '📤 送出至出貨系統';
+      showToast('⚠️ 登入已失效，請重新登入後再按一次送出');
+      logout();
+      return;
+    }
     if (result && result.success) {
       btn.textContent = '✅ 已送出';
       btn.style.background = '#27ae60';
@@ -2387,6 +2451,7 @@ function loadHistory(forceReload) {
         _allRecords    = data.records;
         _historyLoaded = true;
         applyHistoryFilter();
+        loadCreators();
         document.getElementById('history-stats').style.display = 'flex';
         document.getElementById('stat-total').textContent = _allRecords.length;
       } else {
@@ -2400,6 +2465,19 @@ function loadHistory(forceReload) {
         '<div class="empty-icon">⚠️</div><div>載入失敗，請確認 GAS 設定</div>';
       document.getElementById('history-empty').style.display = 'block';
     });
+}
+
+// 填單人另外從存檔用的 GAS 撈（歷史記錄那支沒有這欄），撈到再補進表格
+function loadCreators() {
+  gasRequest({ action: 'getReturnCreators', token: AUTH_TOKEN }, 'POST')
+    .then(function(res) {
+      if (!res || !res.success || !res.creators) return;
+      _allRecords.forEach(function(r) {
+        if (res.creators[r.returnNo]) r.createdBy = res.creators[r.returnNo];
+      });
+      renderHistoryPage();
+    })
+    .catch(function() { /* 撈不到就顯示 —，不影響歷史記錄 */ });
 }
 
 function applyHistoryFilter() {
@@ -2482,6 +2560,7 @@ function renderHistoryPage() {
       '<td><span class="td-reason-badge ' + reasonCls + '">' + escHtml(reasonShort) + '</span></td>' +
       '<td class="td-items">'     + renderItemChips(r.items, false) + '</td>' +
       '<td class="td-items">'     + (r.resendItems && r.resendItems.length ? renderItemChips(r.resendItems, true) : '<span style="color:var(--ink-faint);font-size:12px">—</span>') + '</td>' +
+      '<td style="white-space:nowrap">' + (r.createdBy ? escHtml(r.createdBy) : '<span style="color:var(--ink-faint);font-size:12px">—</span>') + '</td>' +
       '<td style="white-space:nowrap">' +
   '<button class="btn-expand" id="expand-btn-' + globalIdx + '">展開</button> ' +
   '<button class="btn-expand" style="color:var(--accent);border-color:var(--accent-light)" onclick="event.stopPropagation();printFromHistory(' + globalIdx + ')">🖨️ 列印</button>' +
@@ -2493,7 +2572,7 @@ function renderHistoryPage() {
     expandTr.id        = 'hist-expand-' + globalIdx;
     var expandTd       = document.createElement('td');
     expandTd.className = 'expand-cell';
-    expandTd.colSpan   = 7;
+    expandTd.colSpan   = 8;
     expandTd.innerHTML = buildExpandContent(r);
     expandTr.appendChild(expandTd);
     tbody.appendChild(expandTr);
@@ -2603,7 +2682,8 @@ function printFromHistory(idx) {
     reason:          r.reason          || '',
     note:            r.note            || '',
     items:           r.items           || [],
-    resendItems:     r.resendItems     || []
+    resendItems:     r.resendItems     || [],
+    createdBy:       r.createdBy       || ''
   };
 
   // 隱藏「送出至出貨系統」按鈕（歷史記錄已送過了）
